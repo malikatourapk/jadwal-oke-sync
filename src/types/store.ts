@@ -6,6 +6,10 @@ export type StoreCategory =
   | 'elektronik'
   | 'pakaian'
   | 'farmasi'
+  | 'daging_ikan_sayur'
+  | 'kue_bahan_kue'
+  | 'sparepart_motor'
+  | 'pertanian_peternakan'
   | 'lainnya';
 
 export interface Store {
@@ -35,12 +39,16 @@ export interface Store {
 }
 
 export const STORE_CATEGORIES: { value: StoreCategory; label: string }[] = [
-  { value: 'sembako', label: 'Toko Sembako' },
+  { value: 'sembako', label: 'Toko Sembako / Kelontong' },
+  { value: 'pakaian', label: 'Toko Pakaian / Fashion' },
+  { value: 'daging_ikan_sayur', label: 'Toko Daging, Ikan, dan Sayur' },
+  { value: 'kue_bahan_kue', label: 'Toko Kue / Bahan Kue' },
   { value: 'bangunan', label: 'Toko Bangunan' },
-  { value: 'agen_sosis', label: 'Agen Sosis' },
-  { value: 'atk', label: 'Toko ATK' },
+  { value: 'farmasi', label: 'Apotek / Toko Obat' },
+  { value: 'sparepart_motor', label: 'Toko Sparepart / Aksesoris Motor' },
   { value: 'elektronik', label: 'Toko Elektronik' },
-  { value: 'pakaian', label: 'Toko Pakaian' },
-  { value: 'farmasi', label: 'Apotek/Farmasi' },
+  { value: 'pertanian_peternakan', label: 'Toko Pertanian / Peternakan' },
+  { value: 'atk', label: 'Toko ATK' },
+  { value: 'agen_sosis', label: 'Agen Sosis' },
   { value: 'lainnya', label: 'Lainnya' },
 ];

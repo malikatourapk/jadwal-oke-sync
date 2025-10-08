@@ -82,43 +82,8 @@ export const WaitingApproval = () => {
         <CardContent className="space-y-4">
           <div className="text-center text-sm text-muted-foreground">
             <p>Email Anda: <span className="font-semibold text-foreground">{user?.email}</span></p>
-          </div>
-
-          {/* Email Confirmation Info */}
-          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
-                  Email Konfirmasi
-                </p>
-                <p className="text-blue-800 dark:text-blue-200">
-                  Kami telah mengirimkan email konfirmasi ke alamat email Anda. 
-                  Silakan cek inbox atau folder spam Anda.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Warning about email delay */}
-          <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-semibold text-orange-900 dark:text-orange-100 mb-1">
-                  Tunggu Maksimal 15 Menit
-                </p>
-                <p className="text-orange-800 dark:text-orange-200">
-                  Email konfirmasi akan tiba maksimal 15 menit. Jika setelah 15 menit Anda tidak menerima email, 
-                  silakan hubungi admin melalui tombol di bawah ini.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center text-sm text-muted-foreground pt-2">
-            <p>
-              Atau hubungi kami untuk mencoba trial 1 bulan
+            <p className="mt-4">
+              Akun Anda sedang menunggu konfirmasi dari admin. Silakan hubungi admin untuk mengaktifkan akun atau mencoba trial 1 bulan.
             </p>
           </div>
 

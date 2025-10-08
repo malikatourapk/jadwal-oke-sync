@@ -11,11 +11,13 @@ import { formatThermalReceipt, formatPrintReceipt } from '@/lib/receipt-formatte
 import { usePOSContext } from '@/contexts/POSContext';
 import { useToast } from '@/hooks/use-toast';
 import { PaymentMethodSelector } from '@/components/POS/PaymentMethodSelector';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const CartView = () => {
   const navigate = useNavigate();
   const { cart, formatPrice, receipts, processTransaction, clearCart } = usePOSContext();
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
 
   const subtotal = cart.reduce((sum, item) => {
     const price = item.finalPrice || item.product.sellPrice;
@@ -34,7 +36,7 @@ export const CartView = () => {
         description: `Invoice ${receipt.id} telah dibuat`,
       });
       clearCart();
-      navigate('/', { state: { viewReceipt: receipt } });
+      navigate(isAdmin ? '/dashboard' : '/', { state: { viewReceipt: receipt } });
     }
   };
 
@@ -49,7 +51,7 @@ export const CartView = () => {
       });
       printReceipt(receipt);
       clearCart();
-      navigate('/');
+      navigate(isAdmin ? '/dashboard' : '/');
     }
   };
 
@@ -73,7 +75,7 @@ export const CartView = () => {
             description: `Invoice ${receipt.id} berhasil dicetak ke thermal printer!`,
           });
           clearCart();
-          navigate('/');
+          navigate(isAdmin ? '/dashboard' : '/');
         } else {
           toast({
             title: "Error",
@@ -126,7 +128,7 @@ export const CartView = () => {
           <Button 
             variant="outline" 
             size="icon"
-            onClick={() => navigate('/')}
+            onClick={() => navigate(isAdmin ? '/dashboard' : '/')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -226,7 +228,7 @@ export const CartView = () => {
                     <Button 
                       variant="secondary"
                       className="w-full" 
-                      onClick={() => navigate('/')}
+                      onClick={() => navigate(isAdmin ? '/dashboard' : '/')}
                     >
                       Kembali ke Kasir
                     </Button>
@@ -253,10 +255,10 @@ export const CartView = () => {
                      ) : (
                        receipts.slice(-10).reverse().map((receipt) => (
                          <div 
-                           key={receipt.id}
-                           className="flex flex-col p-3 bg-secondary/50 rounded border cursor-pointer hover:bg-secondary/70 transition-colors"
-                           onClick={() => navigate('/', { state: { viewReceipt: receipt } })}
-                         >
+                            key={receipt.id}
+                            className="flex flex-col p-3 bg-secondary/50 rounded border cursor-pointer hover:bg-secondary/70 transition-colors"
+                            onClick={() => navigate(isAdmin ? '/dashboard' : '/', { state: { viewReceipt: receipt } })}
+                          >
                            <div className="flex items-center justify-between mb-2">
                              <div className="font-medium text-sm">{receipt.id}</div>
                              <div className="font-semibold text-sm">

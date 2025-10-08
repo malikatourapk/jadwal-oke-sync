@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Store, Users, LogOut, Settings, Database } from 'lucide-react';
+import { Store, Users, LogOut } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
 
 export const Dashboard = () => {
@@ -96,49 +96,6 @@ export const Dashboard = () => {
               </p>
             </CardContent>
           </Card>
-
-          {/* Grid layout for Settings and Backup - side by side on mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Store Settings Menu */}
-            <Card 
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/settings')}
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="p-3 rounded-lg bg-primary/10">
-                    <Settings className="h-8 w-8 text-primary" />
-                  </div>
-                  <span>Pengaturan Toko</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Atur informasi toko, kasir, dan konfigurasi sistem
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Backup & Restore Menu */}
-            <Card 
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/backup-restore')}
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="p-3 rounded-lg bg-primary/10">
-                    <Database className="h-8 w-8 text-primary" />
-                  </div>
-                  <span>Backup & Restore</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Cadangkan dan pulihkan data toko Anda
-                </p>
-              </CardContent>
-            </Card>
-          </div>
         </div>
 
         {/* Logout Button */}

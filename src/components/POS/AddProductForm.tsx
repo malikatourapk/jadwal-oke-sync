@@ -53,6 +53,29 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, products
       return;
     }
 
+    // Check if code or barcode already exists
+    if (formData.code && formData.code.trim()) {
+      const existingCode = products.find(p => 
+        p.code && p.code.toLowerCase() === formData.code.toLowerCase() &&
+        p.name.toLowerCase().trim() !== formData.name.toLowerCase().trim()
+      );
+      if (existingCode) {
+        toast.error(`Kode "${formData.code}" sudah digunakan oleh produk "${existingCode.name}"`);
+        return;
+      }
+    }
+
+    if (formData.barcode && formData.barcode.trim()) {
+      const existingBarcode = products.find(p => 
+        p.barcode && p.barcode.toLowerCase() === formData.barcode.toLowerCase() &&
+        p.name.toLowerCase().trim() !== formData.name.toLowerCase().trim()
+      );
+      if (existingBarcode) {
+        toast.error(`Barcode "${formData.barcode}" sudah digunakan oleh produk "${existingBarcode.name}"`);
+        return;
+      }
+    }
+
     // Check if product with same name already exists
     const existingProduct = products.find(p => 
       p.name.toLowerCase().trim() === formData.name.toLowerCase().trim()

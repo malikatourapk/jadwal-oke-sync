@@ -244,7 +244,7 @@ export const ShoppingList = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">
-                  {pendingItems.length} pending
+                  {pendingItems.length} item
                 </Badge>
                 {completedItems.length > 0 && (
                   <Badge variant="outline">

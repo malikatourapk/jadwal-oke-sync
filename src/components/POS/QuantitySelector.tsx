@@ -222,24 +222,7 @@ export const QuantitySelector = ({
         </div>
       )}
 
-      {/* Bulk pricing editor */}
-      {canEditPrice && onPriceChange && (
-        <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">
-            Harga khusus:
-          </Label>
-          <Input
-            type="number"
-            value={customPrice || ''}
-            onChange={(e) => handlePriceChange(e.target.value)}
-            className="h-8 text-sm"
-            placeholder="Harga per lusin"
-            min="0"
-            inputMode="decimal"
-            onFocus={(e) => e.target.select()}
-          />
-        </div>
-      )}
+      {/* Bulk pricing editor - Hidden as per request */}
     </div>
   );
 };
