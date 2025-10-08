@@ -238,7 +238,7 @@ export const StoreSettings = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/pos')}
               className="h-8 w-8 sm:h-10 sm:w-10 p-0"
             >
               <ArrowLeft className="h-4 w-4" />

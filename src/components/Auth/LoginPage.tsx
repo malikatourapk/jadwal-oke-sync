@@ -95,7 +95,9 @@ export const LoginPage = () => {
       } else if (error.message?.includes('Email not confirmed')) {
         errorMessage = 'Email belum dikonfirmasi. Silakan cek email Anda';
       } else if (error.message?.includes('menunggu persetujuan')) {
-        errorMessage = error.message;
+        // Redirect to waiting approval page
+        navigate('/waiting-approval');
+        return;
       } else if (error.message?.includes('Username tidak ditemukan')) {
         errorMessage = 'Username tidak ditemukan';
       }

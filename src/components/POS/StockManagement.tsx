@@ -39,7 +39,9 @@ export const StockManagement = ({
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category?.toLowerCase().includes(searchTerm.toLowerCase());
+      product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.barcode?.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (showLowStockOnly) {
       // 2 lusin = 24 unit, 1 kodi = 20 unit - use higher threshold
@@ -110,7 +112,7 @@ export const StockManagement = ({
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Cari produk..."
+              placeholder="Cari nama produk, kode produk, atau barcode..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
@@ -252,14 +254,27 @@ export const StockManagement = ({
                       <Input
                         type="number"
                         min="0"
-                        value={bulkStockInputs[product.id] === undefined ? '' : bulkStockInputs[product.id]}
+                        value={bulkStockInputs[product.id] || ''}
                         onChange={(e) => {
                           const value = e.target.value;
-                          const qty = value === '' ? 0 : parseInt(value);
-                          setBulkStockInputs(prev => ({
-                            ...prev,
-                            [product.id]: qty
-                          }));
+                          if (value === '') {
+                            setBulkStockInputs(prev => {
+                              const updated = { ...prev };
+                              delete updated[product.id];
+                              return updated;
+                            });
+                          } else {
+                            const qty = parseInt(value);
+                            setBulkStockInputs(prev => ({
+                              ...prev,
+                              [product.id]: qty
+                            }));
+                          }
+                        }}
+                        onFocus={(e) => {
+                          if (e.target.value === '0') {
+                            e.target.select();
+                          }
                         }}
                         className="h-8"
                         placeholder="0"

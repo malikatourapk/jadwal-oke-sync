@@ -123,13 +123,14 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       // Remove temp div
       document.body.removeChild(tempDiv);
       
-      // Create PDF
+      // Create PDF with margins
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgData = canvas.toDataURL('image/png');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const margin = 10; // 10mm margin on all sides
+      const pdfWidth = pdf.internal.pageSize.getWidth() - (margin * 2);
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, 'PNG', margin, margin, pdfWidth, pdfHeight);
       
       // Generate filename
       const filename = `Laporan-${getPeriodLabel(selectedPeriod)}-${format(new Date(), 'ddMMyyyy')}.pdf`;
@@ -142,24 +143,26 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       
       if (whatsappNumber) {
         // Create message
-        const message = `Laporan Penjualan ${currentStore?.name || 'Toko'}
-        
-Periode: ${getPeriodLabel(selectedPeriod)}
-Tanggal: ${format(start, 'dd MMM yyyy', { locale: id })} - ${format(end, 'dd MMM yyyy', { locale: id })}
+        const message = `📊 *LAPORAN PENJUALAN*
+${currentStore?.name || 'Toko'}
 
-📊 Ringkasan:
-• Total Penjualan: ${formatPrice(stats.totalSales)}
-• Total Profit: ${formatPrice(stats.totalProfit)}  
-• Transaksi: ${stats.totalTransactions}
-• Barang Terjual: ${stats.totalItems}
+📅 Periode: ${getPeriodLabel(selectedPeriod)}
+${format(start, 'dd MMM yyyy', { locale: id })} - ${format(end, 'dd MMM yyyy', { locale: id })}
 
-File PDF telah didownload. Silakan kirim file tersebut melalui WhatsApp.`;
+💰 Total Penjualan: ${formatPrice(stats.totalSales)}
+📈 Total Profit: ${formatPrice(stats.totalProfit)}
+🧾 Transaksi: ${stats.totalTransactions}
+📦 Barang Terjual: ${stats.totalItems}
+
+_File PDF telah didownload. Silakan kirim file tersebut melalui chat ini._`;
         
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
         
         window.open(whatsappUrl, '_blank');
-        toast.success('PDF telah didownload! Kirim file PDF melalui WhatsApp.');
+        toast.success('PDF telah didownload!', {
+          description: 'Kirim file PDF melalui WhatsApp yang sudah terbuka'
+        });
       } else {
         toast.success('PDF berhasil didownload!');
         toast.info('Atur nomor WhatsApp di Pengaturan Toko untuk mengirim langsung');
