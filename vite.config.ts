@@ -19,6 +19,11 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ['react', 'react-dom'],
+    dedupe: [
+      'react', 
+      'react-dom',
+      '@radix-ui/react-tooltip',
+      '@radix-ui/react-slot'
+    ],
   },
 }));
