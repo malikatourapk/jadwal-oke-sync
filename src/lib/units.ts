@@ -1,3 +1,6 @@
+import { StoreCategory } from '@/types/store';
+import { getUnitsForStoreCategory, getUnitLabel } from '@/types/units';
+
 // Unit conversion utilities
 export interface UnitConversion {
   unit: string;
@@ -5,18 +8,17 @@ export interface UnitConversion {
   display: string;
 }
 
-export const getUnitDisplay = (quantity: number, productName?: string, category?: string): UnitConversion[] => {
+export const getUnitDisplay = (quantity: number, productName?: string, category?: string, storeCategory?: StoreCategory): UnitConversion[] => {
   const conversions: UnitConversion[] = [];
   
-  // For paper category, use rim as base unit
-  if (category === 'Kertas') {
+  // For paper category in ATK stores
+  if (category === 'Kertas' && storeCategory === 'atk') {
     conversions.push({
       unit: 'rim',
       quantity,
       display: `${quantity} rim (${quantity * 500} lembar)`
     });
 
-    // Karton conversion for paper (5 rim = 1 karton)
     if (quantity >= 5) {
       const karton = Math.floor(quantity / 5);
       const remainder = quantity % 5;
@@ -29,14 +31,14 @@ export const getUnitDisplay = (quantity: number, productName?: string, category?
       }
     }
   } else {
-    // Always show the base quantity for non-paper items
+    // Standard display for all other categories
     conversions.push({
       unit: 'pcs',
       quantity,
       display: `${quantity} pcs`
     });
 
-    // Standard conversions
+    // Standard conversions (useful for most stores)
     if (quantity >= 10) {
       const pax = Math.floor(quantity / 10);
       const remainder = quantity % 10;
@@ -100,24 +102,46 @@ export const getUnitMultiplier = (unit: string, category?: string): number => {
     case 'gros':
       return 144;
     case 'karton':
-      return category === 'Kertas' ? 5 : 1; // For paper, 5 rim = 1 karton
+      return category === 'Kertas' ? 5 : 1;
     case 'rim':
-      return 1; // Base unit for paper
+      return 1;
+    // Weight units
+    case 'kg':
+      return 1000; // in grams
+    case 'ons':
+      return 100;
+    case 'gram':
+      return 1;
+    // Volume units
+    case 'liter':
+      return 1000; // in ml
+    case 'ml':
+      return 1;
     default:
       return 1;
   }
 };
 
-export const getUnitOptions = (productName?: string, category?: string) => {
-  // For paper category, only show rim and karton
-  if (category === 'Kertas') {
+export const getUnitOptions = (productName?: string, category?: string, storeCategory?: StoreCategory) => {
+  // For paper category in ATK stores
+  if (category === 'Kertas' && storeCategory === 'atk') {
     return [
       { value: 'rim', label: 'Rim (500 lembar)', multiplier: 1 },
       { value: 'karton', label: 'Karton (5 rim)', multiplier: 5 }
     ];
   }
 
-  // Standard units for other products
+  // If store category is provided, use category-specific units
+  if (storeCategory) {
+    const units = getUnitsForStoreCategory(storeCategory);
+    return units.map(u => ({
+      value: u.unit,
+      label: `${u.label} (${u.description})`,
+      multiplier: getUnitMultiplier(u.unit, category)
+    }));
+  }
+
+  // Default units for ATK or unknown categories
   return [
     { value: 'pcs', label: 'Pcs', multiplier: 1 },
     { value: 'pax', label: 'Pax (10 pcs)', multiplier: 10 },

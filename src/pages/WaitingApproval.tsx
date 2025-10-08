@@ -12,23 +12,39 @@ export const WaitingApproval = () => {
   const [adminContacts, setAdminContacts] = useState<{ whatsapp?: string; instagram?: string }>({});
 
   useEffect(() => {
-    // Fetch admin contact info
+    // Fetch admin contact info from stores table
     const fetchAdminContacts = async () => {
       try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('admin_whatsapp, admin_instagram')
-          .eq('email', 'tokoanjar09@gmail.com')
-          .maybeSingle();
+        const { data, error } = await supabase
+          .from('stores')
+          .select('whatsapp_number')
+          .limit(1)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching store contacts:', error);
+          // Set fallback contact for demo
+          setAdminContacts({
+            whatsapp: '6281234567890',
+            instagram: 'tokoanjar'
+          });
+          return;
+        }
         
         if (data) {
+          console.log('Store contacts fetched:', data);
           setAdminContacts({
-            whatsapp: (data as any).admin_whatsapp,
-            instagram: (data as any).admin_instagram
+            whatsapp: data.whatsapp_number || '6281234567890',
+            instagram: 'tokoanjar' // You can add instagram field to stores table later
           });
         }
       } catch (error) {
-        console.error('Error fetching admin contacts:', error);
+        console.error('Error fetching store contacts:', error);
+        // Set fallback contact for demo
+        setAdminContacts({
+          whatsapp: '6281234567890',
+          instagram: 'tokoanjar'
+        });
       }
     };
 

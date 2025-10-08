@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { getUnitDisplay, getUnitOptions, getUnitMultiplier } from '@/lib/units';
+import { useStore } from '@/contexts/StoreContext';
+import { StoreCategory } from '@/types/store';
 
 interface QuantitySelectorProps {
   quantity: number;
@@ -36,12 +38,14 @@ export const QuantitySelector = ({
   onKeyDown,
   onGetTotalQuantity
 }: QuantitySelectorProps) => {
+  const { currentStore } = useStore();
+  const storeCategory = currentStore?.category as StoreCategory;
   const [selectedUnit, setSelectedUnit] = useState('pcs');
   const [unitQuantity, setUnitQuantity] = useState(0);
   const [customPrice, setCustomPrice] = useState<string>('');
 
-  const unitOptions = getUnitOptions(productName, category);
-  const unitDisplay = getUnitDisplay(quantity, productName, category);
+  const unitOptions = getUnitOptions(productName, category, storeCategory);
+  const unitDisplay = getUnitDisplay(quantity, productName, category, storeCategory);
   const canEditPrice = allowBulkPricing && quantity >= 12;
 
   // Initialize unit selector based on category
@@ -178,10 +182,10 @@ export const QuantitySelector = ({
               inputMode="numeric"
             />
             <Select value={selectedUnit} onValueChange={handleUnitChange}>
-              <SelectTrigger className="h-8 flex-1">
-                <SelectValue />
+              <SelectTrigger className="h-8 flex-1 min-w-[120px]">
+                <SelectValue placeholder="Pilih unit" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[300px]">
                 {unitOptions.map(option => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
