@@ -19,7 +19,7 @@ interface SalesReportPrintProps {
   storeAddress?: string;
 }
 
-export export const generateA4PrintContent = ({
+export const generateA4PrintContent = ({
   receipts,
   formatPrice,
   periodLabel,
