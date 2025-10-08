@@ -440,7 +440,7 @@ Profit: ${formatPrice(receipt.profit)}
     <div className="min-h-screen w-full bg-background">
       {/* Header - Fixed */}
       <header className="fixed top-0 z-50 border-b bg-card shadow-sm w-full">
-        <div className="w-full px-2 sm:px-4 py-3 sm:py-4">
+        <div className="w-full px-2 sm:px-4 py-2">
           <div className="flex items-center justify-between">
             <div 
               onClick={() => navigate('/settings', { replace: true })} 
@@ -450,7 +450,7 @@ Profit: ${formatPrice(receipt.profit)}
               <div>
                 <div className="hidden sm:block">
                   <h1 className="text-lg sm:text-2xl font-bold">
-                    Kasir {currentStore?.name || 'Toko'}
+                    Kasir POS Multi Toko
                   </h1>
                   {currentStore?.address && (
                     <p className="text-xs sm:text-sm text-muted-foreground">

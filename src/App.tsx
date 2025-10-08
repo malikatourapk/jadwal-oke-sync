@@ -7,6 +7,7 @@ import { CartView } from "./pages/CartView";
 import { ReportsPage } from "./pages/ReportsPage";
 import { StoreSettings } from "./pages/StoreSettings";
 import { Dashboard } from "./pages/Dashboard";
+import { BackupRestorePage } from "./pages/BackupRestorePage";
 import NotFound from "./pages/NotFound";
 import { POSProvider } from "@/contexts/POSContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -69,6 +70,11 @@ const App = () => {
                     <Route path="/admin/users" element={
                       <AdminRoute>
                         <UserManagement />
+                      </AdminRoute>
+                    } />
+                    <Route path="/backup-restore" element={
+                      <AdminRoute>
+                        <BackupRestorePage />
                       </AdminRoute>
                     } />
                     <Route path="/waiting-approval" element={<WaitingApproval />} />

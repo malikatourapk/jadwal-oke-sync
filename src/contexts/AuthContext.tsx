@@ -135,19 +135,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     if (error) return { error };
     
-    // Check if user is approved
-    if (data.user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_approved')
-        .eq('user_id', data.user.id)
-        .single();
-      
-      if (!profile?.is_approved) {
-        await supabase.auth.signOut();
-        return { error: { message: 'Akun Anda masih menunggu persetujuan admin' } };
-      }
-    }
+    // User approval will be checked by ProtectedRoute
+    // So we don't block login here, just let them in
     
     return { error };
   };
