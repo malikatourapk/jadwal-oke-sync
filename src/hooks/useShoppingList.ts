@@ -62,7 +62,7 @@ export const useShoppingList = () => {
     loadItems();
 
     const channel = supabase
-      .channel('shopping_items_changes')
+      .channel(`shopping_items_${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -72,13 +72,18 @@ export const useShoppingList = () => {
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
+          console.log('Shopping item realtime update:', payload);
+          
           if (payload.eventType === 'INSERT') {
             const newItem: ShoppingItem = {
               ...payload.new as any,
               created_at: new Date((payload.new as any).created_at),
               updated_at: new Date((payload.new as any).updated_at)
             };
-            setItems(prev => [newItem, ...prev.filter(item => item.id !== newItem.id)]);
+            setItems(prev => {
+              const filtered = prev.filter(item => item.id !== newItem.id);
+              return [newItem, ...filtered];
+            });
           } else if (payload.eventType === 'UPDATE') {
             const updatedItem: ShoppingItem = {
               ...payload.new as any,
@@ -93,7 +98,9 @@ export const useShoppingList = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Shopping items subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);

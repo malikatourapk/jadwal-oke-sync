@@ -15,28 +15,24 @@ export const WaitingApproval = () => {
     // Fetch admin contact info from admin user
     const fetchAdminContacts = async () => {
       try {
-        // First, find the admin user
-        const { data: adminRole } = await supabase
-          .from('user_roles')
-          .select('user_id')
-          .eq('role', 'admin')
-          .limit(1)
+        // Query profiles directly for the admin email
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('admin_whatsapp, admin_instagram')
+          .eq('email', 'tokoanjar09@gmail.com')
           .maybeSingle();
         
-        if (adminRole) {
-          // Then fetch their contact info
-          const { data } = await supabase
-            .from('profiles')
-            .select('admin_whatsapp, admin_instagram')
-            .eq('user_id', adminRole.user_id)
-            .maybeSingle();
-          
-          if (data) {
-            setAdminContacts({
-              whatsapp: (data as any).admin_whatsapp,
-              instagram: (data as any).admin_instagram
-            });
-          }
+        if (error) {
+          console.error('Error fetching admin contacts:', error);
+          return;
+        }
+        
+        if (data) {
+          console.log('Admin contacts fetched:', data);
+          setAdminContacts({
+            whatsapp: (data as any).admin_whatsapp || '',
+            instagram: (data as any).admin_instagram || ''
+          });
         }
       } catch (error) {
         console.error('Error fetching admin contacts:', error);
