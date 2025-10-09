@@ -9,57 +9,58 @@ import { supabase } from '@/integrations/supabase/client';
 export const WaitingApproval = () => {
   const { user, isApproved, loading, signOut } = useAuth();
   const navigate = useNavigate();
-  const [adminContacts, setAdminContacts] = useState<{ whatsapp?: string; instagram?: string }>({});
+  const [adminContacts, setAdminContacts] = useState<{ whatsapp: string; instagram: string }>({
+    whatsapp: '',
+    instagram: ''
+  });
 
   useEffect(() => {
-    // Fetch admin contact info from admin user
-    const fetchAdminContacts = async () => {
+    const loadAdminContacts = async () => {
       try {
-        // Query profiles directly for the admin email
         const { data, error } = await supabase
           .from('profiles')
           .select('admin_whatsapp, admin_instagram')
           .eq('email', 'tokoanjar09@gmail.com')
-          .maybeSingle();
+          .single();
         
         if (error) {
-          console.error('Error fetching admin contacts:', error);
+          console.error('Failed to load admin contacts:', error);
           return;
         }
         
         if (data) {
-          console.log('Admin contacts fetched:', data);
+          const contactData = data as any;
           setAdminContacts({
-            whatsapp: (data as any).admin_whatsapp || '',
-            instagram: (data as any).admin_instagram || ''
+            whatsapp: contactData.admin_whatsapp || '',
+            instagram: contactData.admin_instagram || ''
           });
         }
       } catch (error) {
-        console.error('Error fetching admin contacts:', error);
+        console.error('Error loading admin contacts:', error);
       }
     };
 
-    fetchAdminContacts();
+    loadAdminContacts();
 
-    // Set up real-time subscription for admin contacts updates
-    const channel = supabase
-      .channel('admin_contacts_updates')
+    const contactsChannel = supabase
+      .channel('admin_contact_changes')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
-          table: 'profiles'
+          table: 'profiles',
+          filter: 'email=eq.tokoanjar09@gmail.com'
         },
-        () => {
-          console.log('Admin contacts updated, refetching...');
-          fetchAdminContacts();
+        (payload) => {
+          console.log('Admin contacts updated:', payload);
+          loadAdminContacts();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(contactsChannel);
     };
   }, []);
 

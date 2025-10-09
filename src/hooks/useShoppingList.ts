@@ -61,49 +61,64 @@ export const useShoppingList = () => {
 
     loadItems();
 
-    const channel = supabase
-      .channel(`shopping_items_${user.id}`)
+    const realtimeChannel = supabase
+      .channel(`shopping_list_${user.id}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'shopping_items',
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Shopping item realtime update:', payload);
-          
-          if (payload.eventType === 'INSERT') {
-            const newItem: ShoppingItem = {
-              ...payload.new as any,
-              created_at: new Date((payload.new as any).created_at),
-              updated_at: new Date((payload.new as any).updated_at)
-            };
-            setItems(prev => {
-              const filtered = prev.filter(item => item.id !== newItem.id);
-              return [newItem, ...filtered];
-            });
-          } else if (payload.eventType === 'UPDATE') {
-            const updatedItem: ShoppingItem = {
-              ...payload.new as any,
-              created_at: new Date((payload.new as any).created_at),
-              updated_at: new Date((payload.new as any).updated_at)
-            };
-            setItems(prev => prev.map(item => 
-              item.id === updatedItem.id ? updatedItem : item
-            ));
-          } else if (payload.eventType === 'DELETE') {
-            setItems(prev => prev.filter(item => item.id !== (payload.old as any).id));
-          }
+          const newItem: ShoppingItem = {
+            ...payload.new as any,
+            created_at: new Date((payload.new as any).created_at),
+            updated_at: new Date((payload.new as any).updated_at)
+          };
+          setItems((currentItems) => [newItem, ...currentItems]);
         }
       )
-      .subscribe((status) => {
-        console.log('Shopping items subscription status:', status);
-      });
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'shopping_items',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          const updatedItem: ShoppingItem = {
+            ...payload.new as any,
+            created_at: new Date((payload.new as any).created_at),
+            updated_at: new Date((payload.new as any).updated_at)
+          };
+          setItems((currentItems) => 
+            currentItems.map((item) => 
+              item.id === updatedItem.id ? updatedItem : item
+            )
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'shopping_items',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setItems((currentItems) => 
+            currentItems.filter((item) => item.id !== (payload.old as any).id)
+          );
+        }
+      )
+      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(realtimeChannel);
     };
   }, [user]);
 

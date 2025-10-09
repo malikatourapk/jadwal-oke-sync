@@ -42,43 +42,53 @@ export const UserManagement = () => {
   const [savingContacts, setSavingContacts] = useState(false);
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin && user) {
       fetchUsers();
-      fetchAdminContacts();
+      loadAdminContactInfo();
     }
-  }, [isAdmin]);
+  }, [isAdmin, user]);
 
-  const fetchAdminContacts = async () => {
+  const loadAdminContactInfo = async () => {
+    if (!user) return;
+    
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('admin_whatsapp, admin_instagram')
-        .eq('user_id', user?.id)
-        .maybeSingle();
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('Error loading admin contacts:', error);
+        return;
+      }
       
       if (data) {
-        setAdminWhatsApp((data as any).admin_whatsapp || '');
-        setAdminInstagram((data as any).admin_instagram || '');
+        const profileData = data as any;
+        setAdminWhatsApp(profileData.admin_whatsapp || '');
+        setAdminInstagram(profileData.admin_instagram || '');
       }
     } catch (error) {
-      console.error('Error fetching admin contacts:', error);
+      console.error('Error loading admin contacts:', error);
     }
   };
 
-  const saveAdminContacts = async () => {
+  const saveAdminContactInfo = async () => {
+    if (!user) return;
+    
     setSavingContacts(true);
     try {
       const { error } = await supabase
         .from('profiles')
         .update({
-          admin_whatsapp: adminWhatsApp,
-          admin_instagram: adminInstagram
+          admin_whatsapp: adminWhatsApp.trim(),
+          admin_instagram: adminInstagram.trim()
         } as any)
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
-      toast.success('Kontak admin berhasil disimpan');
+      toast.success('Kontak admin berhasil disimpan!');
     } catch (error) {
       console.error('Error saving admin contacts:', error);
       toast.error('Gagal menyimpan kontak admin');
@@ -266,7 +276,7 @@ export const UserManagement = () => {
                 onChange={(e) => setAdminWhatsApp(e.target.value)}
                 placeholder="628xx xxxx xxxx"
               />
-              <Button onClick={saveAdminContacts} disabled={savingContacts}>
+              <Button onClick={saveAdminContactInfo} disabled={savingContacts}>
                 <MessageCircle className="h-4 w-4 mr-2" />
                 Simpan
               </Button>
@@ -285,7 +295,7 @@ export const UserManagement = () => {
                 onChange={(e) => setAdminInstagram(e.target.value)}
                 placeholder="username"
               />
-              <Button onClick={saveAdminContacts} disabled={savingContacts} variant="outline">
+              <Button onClick={saveAdminContactInfo} disabled={savingContacts} variant="outline">
                 <Instagram className="h-4 w-4 mr-2" />
                 Simpan
               </Button>
