@@ -111,7 +111,7 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       // Wait for rendering
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Capture as canvas
+      // Capture as canvas (whole document)
       const canvas = await html2canvas(tempDiv.querySelector('.container') || tempDiv, {
         scale: 2,
         useCORS: true,
@@ -123,37 +123,50 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       // Remove temp div
       document.body.removeChild(tempDiv);
       
-      // Create PDF with proper pagination
+      // Create PDF with proper pagination by slicing the canvas
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
-      
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const contentWidth = pageWidth - (margin * 2);
-      const contentHeight = pageHeight - (margin * 2);
-      
-      // Calculate how many pages we need
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const totalPages = Math.ceil(imgHeight / contentHeight);
-      
-      // Add pages with proper content slicing
-      for (let page = 0; page < totalPages; page++) {
-        if (page > 0) {
-          pdf.addPage();
-        }
-        
-        const yOffset = -(page * contentHeight * canvas.width / imgWidth);
-        
-        pdf.addImage(
-          imgData, 
-          'PNG', 
-          margin, 
-          page === 0 ? margin : margin + yOffset, 
-          imgWidth, 
-          imgHeight
+      const margin = 10; // 10mm margin
+      const contentWidth = pageWidth - margin * 2;
+      const contentHeight = pageHeight - margin * 2;
+
+      // Calculate pixel/mm ratio to slice correctly
+      const imgWidthMm = contentWidth;
+      const pxPerMm = canvas.width / imgWidthMm;
+      const pageHeightPx = contentHeight * pxPerMm; // how many px fit per PDF page
+
+      let y = 0;
+      let pageIndex = 0;
+
+      while (y < canvas.height) {
+        const sliceHeightPx = Math.min(pageHeightPx, canvas.height - y);
+        // Create a slice canvas
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sliceHeightPx;
+        const ctx = sliceCanvas.getContext('2d');
+        if (!ctx) break;
+        ctx.drawImage(
+          canvas,
+          0,
+          y,
+          canvas.width,
+          sliceHeightPx,
+          0,
+          0,
+          canvas.width,
+          sliceHeightPx
         );
+
+        const sliceHeightMm = sliceHeightPx / pxPerMm;
+        const imgData = sliceCanvas.toDataURL('image/png');
+
+        if (pageIndex > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidthMm, sliceHeightMm);
+
+        y += sliceHeightPx;
+        pageIndex++;
       }
       
       // Generate filename
