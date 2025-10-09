@@ -11,16 +11,15 @@ import { formatThermalReceipt, formatPrintReceipt } from '@/lib/receipt-formatte
 import { usePOSContext } from '@/contexts/POSContext';
 import { useToast } from '@/hooks/use-toast';
 import { PaymentMethodSelector } from '@/components/POS/PaymentMethodSelector';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { QuickProductSearch } from '@/components/POS/QuickProductSearch';
-import { useAuth } from '@/contexts/AuthContext';
 
 export const CartView = () => {
   const navigate = useNavigate();
   const { cart, formatPrice, receipts, processTransaction, clearCart, products, addToCart } = usePOSContext();
   const { toast } = useToast();
-  const { isAdmin } = useAuth();
 
   const subtotal = cart.reduce((sum, item) => {
     const price = item.finalPrice || item.product.sellPrice;
@@ -135,7 +134,7 @@ export const CartView = () => {
           <Button 
             variant="outline" 
             size="icon"
-            onClick={() => navigate(isAdmin ? '/dashboard' : '/')}
+            onClick={() => navigate('/')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -264,7 +263,7 @@ export const CartView = () => {
                      <Button
                       variant="secondary"
                       className="w-full"
-                      onClick={() => navigate(isAdmin ? '/dashboard' : '/')}
+                      onClick={() => navigate('/')}
                     >
                       Kembali ke Kasir
                     </Button>
@@ -293,7 +292,7 @@ export const CartView = () => {
                          <div 
                             key={receipt.id}
                             className="flex flex-col p-3 bg-secondary/50 rounded border cursor-pointer hover:bg-secondary/70 transition-colors"
-                            onClick={() => navigate(isAdmin ? '/dashboard' : '/', { state: { viewReceipt: receipt } })}
+                            onClick={() => navigate('/', { state: { viewReceipt: receipt } })}
                           >
                            <div className="flex items-center justify-between mb-2">
                              <div className="font-medium text-sm">{receipt.id}</div>

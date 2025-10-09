@@ -44,6 +44,27 @@ export const WaitingApproval = () => {
     };
 
     fetchAdminContacts();
+
+    // Set up real-time subscription for admin contacts updates
+    const channel = supabase
+      .channel('admin_contacts_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          console.log('Admin contacts updated, refetching...');
+          fetchAdminContacts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
