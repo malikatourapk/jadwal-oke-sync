@@ -199,6 +199,7 @@ export const BackupRestore = () => {
             onClick={handleBackup} 
             disabled={isBackingUp || !currentStore}
             className="w-full sm:w-auto"
+            variant="secondary"
           >
             <Download className="h-4 w-4 mr-2" />
             {isBackingUp ? 'Membuat Backup...' : 'Buat Backup'}

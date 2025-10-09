@@ -11,8 +11,10 @@ import { formatThermalReceipt, formatPrintReceipt } from '@/lib/receipt-formatte
 import { usePOSContext } from '@/contexts/POSContext';
 import { useToast } from '@/hooks/use-toast';
 import { PaymentMethodSelector } from '@/components/POS/PaymentMethodSelector';
-import { useAuth } from '@/contexts/AuthContext';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { QuickProductSearch } from '@/components/POS/QuickProductSearch';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const CartView = () => {
   const navigate = useNavigate();
@@ -26,25 +28,27 @@ export const CartView = () => {
   }, 0);
 
   const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [discount, setDiscount] = useState(0);
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     
-    const receipt = await processTransaction(paymentMethod, 0);
+    const receipt = await processTransaction(paymentMethod, discount);
     if (receipt) {
       toast({
         title: "Transaksi Berhasil",
         description: `Invoice ${receipt.id} telah dibuat`,
       });
       clearCart();
-      navigate(isAdmin ? '/dashboard' : '/', { state: { viewReceipt: receipt } });
+      setDiscount(0);
+      navigate('/', { state: { viewReceipt: receipt } });
     }
   };
 
   const handlePrintReceipt = async () => {
     if (cart.length === 0) return;
     
-    const receipt = await processTransaction('cash', 0);
+    const receipt = await processTransaction('cash', discount);
     if (receipt) {
       toast({
         title: "Transaksi Berhasil",
@@ -52,14 +56,15 @@ export const CartView = () => {
       });
       printReceipt(receipt);
       clearCart();
-      navigate(isAdmin ? '/dashboard' : '/');
+      setDiscount(0);
+      navigate('/');
     }
   };
 
   const handleThermalPrint = async () => {
     if (cart.length === 0) return;
     
-    const receipt = await processTransaction('cash', 0);
+    const receipt = await processTransaction('cash', discount);
     if (receipt) {
       try {
         // Auto-connect and print without clicking twice
@@ -76,7 +81,8 @@ export const CartView = () => {
             description: `Invoice ${receipt.id} berhasil dicetak ke thermal printer!`,
           });
           clearCart();
-          navigate(isAdmin ? '/dashboard' : '/');
+          setDiscount(0);
+          navigate('/');
         } else {
           toast({
             title: "Error",
@@ -200,10 +206,24 @@ export const CartView = () => {
                     <span>Subtotal:</span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="discount">Diskon (Rp)</Label>
+                    <Input
+                      id="discount"
+                      type="number"
+                      value={discount}
+                      onChange={(e) => setDiscount(Math.max(0, Math.min(subtotal, Number(e.target.value))))}
+                      placeholder="0"
+                      min="0"
+                      max={subtotal}
+                    />
+                  </div>
+                  
                   <Separator />
                   <div className="flex justify-between text-xl font-bold">
                     <span>Total:</span>
-                    <span className="text-primary">{formatPrice(subtotal)}</span>
+                    <span className="text-primary">{formatPrice(Math.max(0, subtotal - discount))}</span>
                   </div>
                   
                   <Separator />
@@ -214,6 +234,18 @@ export const CartView = () => {
                   />
                   
                   <div className="space-y-2">
+                    <QuickProductSearch 
+                      products={products}
+                      onAddToCart={(product) => {
+                        addToCart(product, 1);
+                        toast({
+                          title: "Produk ditambahkan",
+                          description: `${product.name} ditambahkan ke keranjang`,
+                        });
+                      }}
+                      formatPrice={formatPrice}
+                    />
+                    
                     <Button 
                       className="w-full" 
                       onClick={handleCheckout}
@@ -231,7 +263,7 @@ export const CartView = () => {
                      </Button>
                      <Button
                       variant="secondary"
-                      className="w-full" 
+                      className="w-full"
                       onClick={() => navigate(isAdmin ? '/dashboard' : '/')}
                     >
                       Kembali ke Kasir

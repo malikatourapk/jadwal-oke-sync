@@ -12,39 +12,34 @@ export const WaitingApproval = () => {
   const [adminContacts, setAdminContacts] = useState<{ whatsapp?: string; instagram?: string }>({});
 
   useEffect(() => {
-    // Fetch admin contact info from stores table
+    // Fetch admin contact info from admin user
     const fetchAdminContacts = async () => {
       try {
-        const { data, error } = await supabase
-          .from('stores')
-          .select('whatsapp_number')
+        // First, find the admin user
+        const { data: adminRole } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'admin')
           .limit(1)
-          .single();
+          .maybeSingle();
         
-        if (error) {
-          console.error('Error fetching store contacts:', error);
-          // Set fallback contact for demo
-          setAdminContacts({
-            whatsapp: '6281234567890',
-            instagram: 'tokoanjar'
-          });
-          return;
-        }
-        
-        if (data) {
-          console.log('Store contacts fetched:', data);
-          setAdminContacts({
-            whatsapp: data.whatsapp_number || '6281234567890',
-            instagram: 'tokoanjar' // You can add instagram field to stores table later
-          });
+        if (adminRole) {
+          // Then fetch their contact info
+          const { data } = await supabase
+            .from('profiles')
+            .select('admin_whatsapp, admin_instagram')
+            .eq('user_id', adminRole.user_id)
+            .maybeSingle();
+          
+          if (data) {
+            setAdminContacts({
+              whatsapp: (data as any).admin_whatsapp,
+              instagram: (data as any).admin_instagram
+            });
+          }
         }
       } catch (error) {
-        console.error('Error fetching store contacts:', error);
-        // Set fallback contact for demo
-        setAdminContacts({
-          whatsapp: '6281234567890',
-          instagram: 'tokoanjar'
-        });
+        console.error('Error fetching admin contacts:', error);
       }
     };
 
@@ -74,6 +69,7 @@ export const WaitingApproval = () => {
 
   const handleLogoutClick = async () => {
     await signOut();
+    navigate('/login');
   };
 
   if (loading) {

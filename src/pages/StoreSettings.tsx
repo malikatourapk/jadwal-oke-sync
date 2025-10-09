@@ -542,7 +542,7 @@ export const StoreSettings = () => {
                       type={showSettingsPassword ? "text" : "password"}
                       value={formData.settings_password}
                       onChange={(e) => handleInputChange('settings_password', e.target.value)}
-                      placeholder="Default: 12234566"
+                      placeholder="Default: 12345"
                       className="h-9 sm:h-10 text-sm pr-10"
                     />
                     <Button
