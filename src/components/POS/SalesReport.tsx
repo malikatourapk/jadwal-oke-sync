@@ -100,7 +100,7 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
         storeAddress: currentStore?.address || ''
       });
       
-      // Create temporary container
+      // Create temporary container for HTML rendering
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = htmlContent;
       tempDiv.style.position = 'absolute';
@@ -108,67 +108,29 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       tempDiv.style.width = '210mm'; // A4 width
       document.body.appendChild(tempDiv);
       
-      // Wait for rendering
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Capture as canvas (whole document)
-      const canvas = await html2canvas(tempDiv.querySelector('.container') || tempDiv, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        width: 794, // A4 width in pixels at 96 DPI
-        windowWidth: 794
-      });
-      
-      // Remove temp div
-      document.body.removeChild(tempDiv);
-      
-      // Create PDF with proper pagination by slicing the canvas
+      // Wait for styles/layout
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Build PDF with auto-pagination using jsPDF html plugin
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10; // 10mm margin
-      const contentWidth = pageWidth - margin * 2;
-      const contentHeight = pageHeight - margin * 2;
+      const pageMargin = 10;
+      await (pdf as any).html(tempDiv, {
+        x: pageMargin,
+        y: pageMargin,
+        // Limit the width to A4 content area
+        width: pdf.internal.pageSize.getWidth() - pageMargin * 2,
+        windowWidth: 794, // A4 ~ 210mm @ 96dpi
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+        },
+        pagebreak: { mode: ['css', 'legacy'] },
+      });
 
-      // Calculate pixel/mm ratio to slice correctly
-      const imgWidthMm = contentWidth;
-      const pxPerMm = canvas.width / imgWidthMm;
-      const pageHeightPx = contentHeight * pxPerMm; // how many px fit per PDF page
+      // Cleanup
+      document.body.removeChild(tempDiv);
 
-      let y = 0;
-      let pageIndex = 0;
-
-      while (y < canvas.height) {
-        const sliceHeightPx = Math.min(pageHeightPx, canvas.height - y);
-        // Create a slice canvas
-        const sliceCanvas = document.createElement('canvas');
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = sliceHeightPx;
-        const ctx = sliceCanvas.getContext('2d');
-        if (!ctx) break;
-        ctx.drawImage(
-          canvas,
-          0,
-          y,
-          canvas.width,
-          sliceHeightPx,
-          0,
-          0,
-          canvas.width,
-          sliceHeightPx
-        );
-
-        const sliceHeightMm = sliceHeightPx / pxPerMm;
-        const imgData = sliceCanvas.toDataURL('image/png');
-
-        if (pageIndex > 0) pdf.addPage();
-        pdf.addImage(imgData, 'PNG', margin, margin, imgWidthMm, sliceHeightMm);
-
-        y += sliceHeightPx;
-        pageIndex++;
-      }
-      
       // Generate filename
       const filename = `Laporan-${getPeriodLabel(selectedPeriod)}-${format(new Date(), 'ddMMyyyy')}.pdf`;
       
@@ -179,23 +141,9 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       const whatsappNumber = (currentStore as any)?.whatsapp_report_number || (currentStore as any)?.whatsapp_number || '';
       
       if (whatsappNumber) {
-        // Create message
-        const message = `📊 *LAPORAN PENJUALAN*
-${currentStore?.name || 'Toko'}
-
-📅 Periode: ${getPeriodLabel(selectedPeriod)}
-${format(start, 'dd MMM yyyy', { locale: id })} - ${format(end, 'dd MMM yyyy', { locale: id })}
-
-💰 Total Penjualan: ${formatPrice(stats.totalSales)}
-📈 Total Profit: ${formatPrice(stats.totalProfit)}
-🧾 Transaksi: ${stats.totalTransactions}
-📦 Barang Terjual: ${stats.totalItems}
-
-_File PDF telah didownload. Silakan kirim file tersebut melalui chat ini._`;
-        
+        const message = `📊 *LAPORAN PENJUALAN*\n${currentStore?.name || 'Toko'}\n\n📅 Periode: ${getPeriodLabel(selectedPeriod)}\n${format(start, 'dd MMM yyyy', { locale: id })} - ${format(end, 'dd MMM yyyy', { locale: id })}\n\n💰 Total Penjualan: ${formatPrice(stats.totalSales)}\n📈 Total Profit: ${formatPrice(stats.totalProfit)}\n🧾 Transaksi: ${stats.totalTransactions}\n📦 Barang Terjual: ${stats.totalItems}\n\n_File PDF telah didownload. Silakan kirim file tersebut melalui chat ini._`;
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
-        
         window.open(whatsappUrl, '_blank');
         toast.success('PDF telah didownload!', {
           description: 'Kirim file PDF melalui WhatsApp yang sudah terbuka'
@@ -210,6 +158,7 @@ _File PDF telah didownload. Silakan kirim file tersebut melalui chat ini._`;
       toast.error('Gagal membuat PDF');
     }
   };
+      
 
   return (
     <div className="space-y-6">

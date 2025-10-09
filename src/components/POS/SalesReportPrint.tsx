@@ -175,6 +175,7 @@ export const generateA4PrintContent = ({
     thead {
       background: #343a40;
       color: white;
+      display: table-header-group; /* repeat header on each page */
     }
     
     th {
@@ -186,6 +187,8 @@ export const generateA4PrintContent = ({
     
     tbody tr {
       border-bottom: 1px solid #dee2e6;
+      break-inside: avoid; /* avoid splitting rows */
+      page-break-inside: avoid;
     }
     
     tbody tr:nth-child(even) {
