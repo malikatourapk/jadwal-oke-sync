@@ -112,7 +112,7 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Capture as canvas
-      const canvas = await html2canvas(tempDiv.querySelector('body') || tempDiv, {
+      const canvas = await html2canvas(tempDiv.querySelector('.container') || tempDiv, {
         scale: 2,
         useCORS: true,
         logging: false,
@@ -123,14 +123,38 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       // Remove temp div
       document.body.removeChild(tempDiv);
       
-      // Create PDF with margins
+      // Create PDF with proper pagination
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgData = canvas.toDataURL('image/png');
-      const margin = 10; // 10mm margin on all sides
-      const pdfWidth = pdf.internal.pageSize.getWidth() - (margin * 2);
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      pdf.addImage(imgData, 'PNG', margin, margin, pdfWidth, pdfHeight);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const contentWidth = pageWidth - (margin * 2);
+      const contentHeight = pageHeight - (margin * 2);
+      
+      // Calculate how many pages we need
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const totalPages = Math.ceil(imgHeight / contentHeight);
+      
+      // Add pages with proper content slicing
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) {
+          pdf.addPage();
+        }
+        
+        const yOffset = -(page * contentHeight * canvas.width / imgWidth);
+        
+        pdf.addImage(
+          imgData, 
+          'PNG', 
+          margin, 
+          page === 0 ? margin : margin + yOffset, 
+          imgWidth, 
+          imgHeight
+        );
+      }
       
       // Generate filename
       const filename = `Laporan-${getPeriodLabel(selectedPeriod)}-${format(new Date(), 'ddMMyyyy')}.pdf`;
