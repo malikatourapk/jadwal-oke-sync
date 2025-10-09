@@ -77,6 +77,11 @@ export const QuickProductSearch = ({ products, onAddToCart, formatPrice }: Quick
   };
 
   const handleSelectProduct = (product: Product) => {
+    // Prevent adding if stock is 0 and not a photocopy service
+    if (product.stock <= 0 && !product.isPhotocopy) {
+      return;
+    }
+    
     onAddToCart(product, 1);
     setSearchTerm('');
     setSelectedIndex(0);

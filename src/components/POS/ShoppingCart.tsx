@@ -257,10 +257,18 @@ export const ShoppingCart = ({
                   quantity={item.quantity}
                   productName={item.product.name}
                   category={item.product.category}
+                  maxStock={item.product.isPhotocopy ? undefined : item.product.stock}
                   onQuantityChange={(quantity) => {
                     if (quantity === 0) {
                       removeFromCart(item.product.id);
                     } else {
+                      // Validate stock for non-photocopy items
+                      if (!item.product.isPhotocopy && quantity > item.product.stock) {
+                        toast.error('Stok Tidak Cukup', {
+                          description: `Stok ${item.product.name} hanya tersisa ${item.product.stock}`,
+                        });
+                        return;
+                      }
                       updateCartQuantity(item.product.id, quantity, item.finalPrice);
                     }
                   }}
