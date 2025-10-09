@@ -252,62 +252,7 @@ export const ShoppingCart = ({
                   {formatPrice(item.finalPrice || item.product.sellPrice)} × {item.quantity}
                 </div>
                 
-                {/* Bulk Pricing Display */}
-                {item.quantity >= 12 && (
-                  <div className="mb-2 p-2 bg-primary/5 rounded border">
-                    <div className="text-xs font-medium text-primary mb-1">Harga Khusus:</div>
-                    <div className="space-y-1 text-xs">
-                      {/* Per Lusin (12 pcs) */}
-                      {item.quantity >= 12 && (
-                        <div className="flex justify-between">
-                          <span>Per Lusin ({Math.floor(item.quantity / 12)} lusin):</span>
-                          <span className="font-medium">
-                            {formatPrice((item.finalPrice || item.product.sellPrice) * 12)}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Per Kodi (20 pcs) */}
-                      {item.quantity >= 20 && (
-                        <div className="flex justify-between">
-                          <span>Per Kodi ({Math.floor(item.quantity / 20)} kodi):</span>
-                          <span className="font-medium">
-                            {formatPrice((item.finalPrice || item.product.sellPrice) * 20)}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Per Gros (144 pcs) */}
-                      {item.quantity >= 144 && (
-                        <div className="flex justify-between">
-                          <span>Per Gros ({Math.floor(item.quantity / 144)} gros):</span>
-                          <span className="font-medium">
-                            {formatPrice((item.finalPrice || item.product.sellPrice) * 144)}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Per Rim (500 sheets for paper) */}
-                      {item.product.category === 'Kertas' && item.quantity >= 500 && (
-                        <div className="flex justify-between">
-                          <span>Per Rim ({Math.floor(item.quantity / 500)} rim):</span>
-                          <span className="font-medium">
-                            {formatPrice((item.finalPrice || item.product.sellPrice) * 500)}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Total for current quantity */}
-                      <div className="flex justify-between pt-1 border-t border-primary/20">
-                        <span className="font-medium">Total ({item.quantity} pcs):</span>
-                        <span className="font-bold text-primary">
-                          {formatPrice((item.finalPrice || item.product.sellPrice) * item.quantity)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
+                 
                 <QuantitySelector
                   quantity={item.quantity}
                   productName={item.product.name}
@@ -320,10 +265,8 @@ export const ShoppingCart = ({
                     }
                   }}
                   onRemove={() => removeFromCart(item.product.id)}
-                  allowBulkPricing={true}
-                  currentPrice={item.quantity >= 12 ? (item.finalPrice || item.product.sellPrice) * 12 : item.finalPrice || item.product.sellPrice}
-                  onPriceChange={(price) => handlePriceChange(item.product.id, price)}
                   showUnitSelector={true}
+                  showUnitConversions={true}
                 />
               </div>
               

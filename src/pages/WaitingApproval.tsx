@@ -7,7 +7,7 @@ import { Clock, MessageCircle, Instagram, Mail, AlertCircle } from 'lucide-react
 import { supabase } from '@/integrations/supabase/client';
 
 export const WaitingApproval = () => {
-  const { user, isApproved, loading } = useAuth();
+  const { user, isApproved, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [adminContacts, setAdminContacts] = useState<{ whatsapp?: string; instagram?: string }>({});
 
@@ -72,6 +72,10 @@ export const WaitingApproval = () => {
     }
   };
 
+  const handleLogoutClick = async () => {
+    await signOut();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -128,11 +132,11 @@ export const WaitingApproval = () => {
           </div>
 
           <Button
-            onClick={() => navigate('/login')}
+            onClick={handleLogoutClick}
             variant="ghost"
             className="w-full"
           >
-            Kembali ke Login
+            Logout
           </Button>
         </CardContent>
       </Card>

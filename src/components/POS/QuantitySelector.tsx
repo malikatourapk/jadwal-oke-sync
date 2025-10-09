@@ -22,6 +22,7 @@ interface QuantitySelectorProps {
   onPriceChange?: (price: number) => void;
   onKeyDown?: (e: React.KeyboardEvent) => void;
   onGetTotalQuantity?: (getTotalQuantity: () => number) => void;
+  showUnitConversions?: boolean;
 }
 
 export const QuantitySelector = ({
@@ -36,7 +37,8 @@ export const QuantitySelector = ({
   currentPrice,
   onPriceChange,
   onKeyDown,
-  onGetTotalQuantity
+  onGetTotalQuantity,
+  showUnitConversions = false
 }: QuantitySelectorProps) => {
   const { currentStore } = useStore();
   const storeCategory = currentStore?.category as StoreCategory;
@@ -44,8 +46,8 @@ export const QuantitySelector = ({
   const [unitQuantity, setUnitQuantity] = useState(0);
   const [customPrice, setCustomPrice] = useState<string>('');
 
-  const unitOptions = getUnitOptions(productName, category, storeCategory);
-  const unitDisplay = getUnitDisplay(quantity, productName, category, storeCategory);
+  const unitOptions = getUnitOptions(productName, category);
+  const unitDisplay = getUnitDisplay(quantity, productName, category);
   const canEditPrice = allowBulkPricing && quantity >= 12;
 
   // Initialize unit selector based on category
@@ -215,14 +217,23 @@ export const QuantitySelector = ({
         </div>
       )}
 
-      {/* Display unit conversions */}
-      {unitDisplay.length > 0 && quantity > 0 && (
+      {/* Display unit conversions - Only in cart */}
+      {showUnitConversions && unitDisplay.length > 0 && quantity > 0 && (
         <div className="flex flex-wrap gap-1">
-          {unitDisplay.slice(1).map((conversion, index) => (
-            <Badge key={index} variant="outline" className="text-xs">
-              {conversion.display}
-            </Badge>
-          ))}
+          {(() => {
+            // Only show the most relevant conversion
+            const conversions = unitDisplay.slice(1);
+            if (conversions.length === 0) return null;
+            
+            // Find the largest applicable conversion
+            const relevantConversion = conversions[conversions.length - 1];
+            
+            return (
+              <Badge key={relevantConversion.unit} variant="outline" className="text-xs">
+                {relevantConversion.display}
+              </Badge>
+            );
+          })()}
         </div>
       )}
 

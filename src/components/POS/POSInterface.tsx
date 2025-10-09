@@ -440,7 +440,7 @@ Profit: ${formatPrice(receipt.profit)}
     <div className="min-h-screen w-full bg-background">
       {/* Header - Fixed */}
       <header className="fixed top-0 z-50 border-b bg-card shadow-sm w-full">
-        <div className="w-full px-2 sm:px-4 py-1">
+        <div className="w-full px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div 
               onClick={() => navigate('/settings', { replace: true })} 
@@ -545,7 +545,7 @@ Profit: ${formatPrice(receipt.profit)}
       </header>
 
         {/* Dashboard Stats with top padding for fixed header */}
-      <div className="w-full px-2 sm:px-4 py-2 sm:py-4 mt-14 sm:mt-16">
+      <div className="w-full px-2 sm:px-4 py-2 sm:py-4 mt-18 sm:mt-20">
         <div className="grid grid-cols-1 gap-2 sm:gap-4 mb-4 sm:mb-6">
           {/* Full width card on top */}
           <Card className="pos-card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleDashboardClick('revenue')}>

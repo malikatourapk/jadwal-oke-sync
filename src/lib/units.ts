@@ -1,6 +1,3 @@
-import { StoreCategory } from '@/types/store';
-import { getUnitsForStoreCategory, getUnitLabel } from '@/types/units';
-
 // Unit conversion utilities
 export interface UnitConversion {
   unit: string;
@@ -8,11 +5,11 @@ export interface UnitConversion {
   display: string;
 }
 
-export const getUnitDisplay = (quantity: number, productName?: string, category?: string, storeCategory?: StoreCategory): UnitConversion[] => {
+export const getUnitDisplay = (quantity: number, productName?: string, category?: string): UnitConversion[] => {
   const conversions: UnitConversion[] = [];
   
-  // For paper category in ATK stores
-  if (category === 'Kertas' && storeCategory === 'atk') {
+  // For paper category
+  if (category === 'Kertas') {
     conversions.push({
       unit: 'rim',
       quantity,
@@ -38,7 +35,7 @@ export const getUnitDisplay = (quantity: number, productName?: string, category?
       display: `${quantity} pcs`
     });
 
-    // Standard conversions (useful for most stores)
+    // Standard conversions
     if (quantity >= 10) {
       const pax = Math.floor(quantity / 10);
       const remainder = quantity % 10;
@@ -105,43 +102,21 @@ export const getUnitMultiplier = (unit: string, category?: string): number => {
       return category === 'Kertas' ? 5 : 1;
     case 'rim':
       return 1;
-    // Weight units
-    case 'kg':
-      return 1000; // in grams
-    case 'ons':
-      return 100;
-    case 'gram':
-      return 1;
-    // Volume units
-    case 'liter':
-      return 1000; // in ml
-    case 'ml':
-      return 1;
     default:
       return 1;
   }
 };
 
-export const getUnitOptions = (productName?: string, category?: string, storeCategory?: StoreCategory) => {
-  // For paper category in ATK stores
-  if (category === 'Kertas' && storeCategory === 'atk') {
+export const getUnitOptions = (productName?: string, category?: string) => {
+  // For paper category
+  if (category === 'Kertas') {
     return [
       { value: 'rim', label: 'Rim (500 lembar)', multiplier: 1 },
       { value: 'karton', label: 'Karton (5 rim)', multiplier: 5 }
     ];
   }
 
-  // If store category is provided, use category-specific units
-  if (storeCategory) {
-    const units = getUnitsForStoreCategory(storeCategory);
-    return units.map(u => ({
-      value: u.unit,
-      label: `${u.label} (${u.description})`,
-      multiplier: getUnitMultiplier(u.unit, category)
-    }));
-  }
-
-  // Default units for ATK or unknown categories
+  // Default units
   return [
     { value: 'pcs', label: 'Pcs', multiplier: 1 },
     { value: 'pax', label: 'Pax (10 pcs)', multiplier: 10 },

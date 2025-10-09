@@ -1,21 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CartItem, Receipt as ReceiptType } from '@/types/pos';
+import { CartItem, Receipt as ReceiptType, Product } from '@/types/pos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingCart as CartIcon, ArrowLeft, Printer, CreditCard, Bluetooth } from 'lucide-react';
+import { ShoppingCart as CartIcon, ArrowLeft, Printer, CreditCard } from 'lucide-react';
 import { thermalPrinter } from '@/lib/thermal-printer';
 import { formatThermalReceipt, formatPrintReceipt } from '@/lib/receipt-formatter';
 import { usePOSContext } from '@/contexts/POSContext';
 import { useToast } from '@/hooks/use-toast';
 import { PaymentMethodSelector } from '@/components/POS/PaymentMethodSelector';
 import { useAuth } from '@/contexts/AuthContext';
+import { QuickProductSearch } from '@/components/POS/QuickProductSearch';
 
 export const CartView = () => {
   const navigate = useNavigate();
-  const { cart, formatPrice, receipts, processTransaction, clearCart } = usePOSContext();
+  const { cart, formatPrice, receipts, processTransaction, clearCart, products, addToCart } = usePOSContext();
   const { toast } = useToast();
   const { isAdmin } = useAuth();
 
@@ -147,6 +148,17 @@ export const CartView = () => {
                 <CardTitle>Item dalam Keranjang</CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Quick Product Search */}
+                {products && products.length > 0 && (
+                  <div className="mb-4">
+                    <QuickProductSearch 
+                      products={products}
+                      onAddToCart={addToCart}
+                      formatPrice={formatPrice}
+                    />
+                  </div>
+                )}
+
                 {cart.length === 0 ? (
                   <div className="text-center py-8">
                     <CartIcon className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -209,23 +221,15 @@ export const CartView = () => {
                       <CreditCard className="h-4 w-4 mr-2" />
                       Checkout
                     </Button>
-                    <Button 
-                      variant="outline"
-                      className="w-full" 
-                      onClick={handleThermalPrint}
-                    >
-                      <Printer className="h-4 w-4 mr-2" />
-                      Print Thermal
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="w-full" 
-                      onClick={handlePrintReceipt}
-                    >
-                      <Printer className="h-4 w-4 mr-2" />
-                      Print Browser
-                    </Button>
-                    <Button 
+                     <Button 
+                       variant="outline"
+                       className="w-full" 
+                       onClick={handleThermalPrint}
+                     >
+                       <Printer className="h-4 w-4 mr-2" />
+                       Print Thermal
+                     </Button>
+                     <Button
                       variant="secondary"
                       className="w-full" 
                       onClick={() => navigate(isAdmin ? '/dashboard' : '/')}
