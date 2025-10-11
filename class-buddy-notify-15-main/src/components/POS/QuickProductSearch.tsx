@@ -23,18 +23,29 @@ export const QuickProductSearch = ({ products, onAddToCart, formatPrice }: Quick
     .filter(product => {
       if (!searchTerm.trim()) return false;
       
-      const searchWords = searchTerm.toLowerCase().trim().split(/\s+/);
+      const searchLower = searchTerm.toLowerCase().trim();
       const productName = product.name.toLowerCase();
       const productCategory = product.category?.toLowerCase() || '';
       const productCode = product.code?.toLowerCase() || '';
       const productBarcode = product.barcode?.toLowerCase() || '';
       
-      // Check if all search words are found in product name, code, barcode, or category
+      // Prioritas 1: Exact match untuk kode atau barcode
+      if (productCode && productCode === searchLower) return true;
+      if (productBarcode && productBarcode === searchLower) return true;
+      
+      // Prioritas 2: Partial match untuk kode atau barcode (starts with)
+      if (productCode && productCode.startsWith(searchLower)) return true;
+      if (productBarcode && productBarcode.startsWith(searchLower)) return true;
+      
+      // Prioritas 3: Contains untuk kode atau barcode
+      if (productCode && productCode.includes(searchLower)) return true;
+      if (productBarcode && productBarcode.includes(searchLower)) return true;
+      
+      // Prioritas 4: Search by name dan category dengan multiple words
+      const searchWords = searchLower.split(/\s+/);
       return searchWords.every(word => 
         productName.includes(word) || 
-        productCategory.includes(word) ||
-        productCode.includes(word) ||
-        productBarcode.includes(word)
+        productCategory.includes(word)
       );
     })
     .slice(0, 5); // Limit to 5 results
