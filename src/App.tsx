@@ -19,6 +19,7 @@ import { AdminRoute } from "@/components/Auth/AdminRoute";
 import { UserManagement } from "@/components/Admin/UserManagement";
 import { WaitingApproval } from "@/pages/WaitingApproval";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PPOBPage } from "@/pages/PPOBPage";
 
 // Create QueryClient outside component to prevent recreation on every render
 const queryClient = new QueryClient({
@@ -65,6 +66,11 @@ const App = () => {
                     <Route path="/settings" element={
                       <ProtectedRoute>
                         <StoreSettings />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/ppob" element={
+                      <ProtectedRoute>
+                        <PPOBPage />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/users" element={

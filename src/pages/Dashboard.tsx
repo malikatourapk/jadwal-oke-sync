@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Store, Users, LogOut } from 'lucide-react';
+import { Store, Users, LogOut, Smartphone } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
 
 export const Dashboard = () => {
@@ -77,8 +77,28 @@ export const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Admin Menu - Only show if user is admin */}
+          {/* PPOB Menu */}
           <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/ppob')}
+          >
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <Smartphone className="h-8 w-8 text-primary" />
+                </div>
+                <span>PPOB</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Layanan pembayaran online: Pulsa, Token Listrik, BPJS, dll
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Admin Menu - Only show if user is admin */}
+          <Card
             className="cursor-pointer hover:shadow-lg transition-shadow"
             onClick={() => navigate('/admin/users')}
           >
