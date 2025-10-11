@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Store, Users, LogOut } from 'lucide-react';
+import { Store, Users, LogOut, Smartphone } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
 
 export const Dashboard = () => {
@@ -72,6 +72,26 @@ export const Dashboard = () => {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Akses sistem Point of Sale untuk transaksi dan manajemen produk
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* PPOB Menu */}
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/ppob')}
+          >
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <Smartphone className="h-8 w-8 text-primary" />
+                </div>
+                <span>PPOB</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Payment Point Online Bank - Pulsa, Token Listrik, BPJS, dan lainnya
               </p>
             </CardContent>
           </Card>
