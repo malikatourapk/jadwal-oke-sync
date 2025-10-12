@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Store, Users, LogOut } from 'lucide-react';
+import { Store, Users, LogOut, Smartphone } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
 
 export const Dashboard = () => {
@@ -11,13 +11,7 @@ export const Dashboard = () => {
   const { signOut, isAdmin, loading, isAdminCheckComplete } = useAuth();
   const { currentStore } = useStore();
 
-  // Redirect non-admin users directly to POS after admin check is complete
-  useEffect(() => {
-    // Only redirect after admin check is complete
-    if (!loading && isAdminCheckComplete && !isAdmin) {
-      navigate('/pos', { replace: true });
-    }
-  }, [isAdmin, loading, isAdminCheckComplete, navigate]);
+  // No auto redirect - show dashboard for all users
 
   const handleLogout = async () => {
     try {
@@ -39,10 +33,7 @@ export const Dashboard = () => {
     );
   }
 
-  // Only admins see this page
-  if (!isAdmin) {
-    return null;
-  }
+  // All approved users can see dashboard
 
   return (
     <div className="min-h-screen w-full bg-background flex items-center justify-center p-4">
@@ -77,25 +68,47 @@ export const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Admin Menu - Only show if user is admin */}
+          {/* PPOB Menu - For all users */}
           <Card 
             className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => navigate('/admin/users')}
+            onClick={() => navigate('/ppob')}
           >
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
                 <div className="p-3 rounded-lg bg-primary/10">
-                  <Users className="h-8 w-8 text-primary" />
+                  <Smartphone className="h-8 w-8 text-primary" />
                 </div>
-                <span>Admin Panel</span>
+                <span>PPOB</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Kelola user, approval pendaftaran, dan administrasi sistem
+                Layanan pembayaran online: Pulsa, Token PLN, PDAM, dan lainnya
               </p>
             </CardContent>
           </Card>
+
+          {/* Admin Menu - Only show if user is admin */}
+          {isAdmin && (
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate('/admin/users')}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <div className="p-3 rounded-lg bg-primary/10">
+                    <Users className="h-8 w-8 text-primary" />
+                  </div>
+                  <span>Admin Panel</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Kelola user, approval pendaftaran, dan administrasi sistem
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Logout Button */}

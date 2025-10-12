@@ -19,6 +19,9 @@ import { AdminRoute } from "@/components/Auth/AdminRoute";
 import { UserManagement } from "@/components/Admin/UserManagement";
 import { WaitingApproval } from "@/pages/WaitingApproval";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PPOB } from "@/pages/PPOB";
+import { SubscriptionManagement } from "@/pages/admin/SubscriptionManagement";
+import { PPOBNavButton } from "@/components/Navigation/PPOBNavButton";
 
 // Create QueryClient outside component to prevent recreation on every render
 const queryClient = new QueryClient({
@@ -52,6 +55,11 @@ const App = () => {
                         <POSInterface />
                       </ProtectedRoute>
                     } />
+                    <Route path="/ppob" element={
+                      <ProtectedRoute>
+                        <PPOB />
+                      </ProtectedRoute>
+                    } />
                     <Route path="/cart" element={
                       <ProtectedRoute>
                         <CartView />
@@ -72,6 +80,11 @@ const App = () => {
                         <UserManagement />
                       </AdminRoute>
                     } />
+                    <Route path="/admin/subscriptions" element={
+                      <AdminRoute>
+                        <SubscriptionManagement />
+                      </AdminRoute>
+                    } />
                     <Route path="/backup-restore" element={
                       <AdminRoute>
                         <BackupRestorePage />
@@ -80,6 +93,7 @@ const App = () => {
                     <Route path="/waiting-approval" element={<WaitingApproval />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  <PPOBNavButton />
                 </BluetoothProvider>
               </POSProvider>
             </BrowserRouter>

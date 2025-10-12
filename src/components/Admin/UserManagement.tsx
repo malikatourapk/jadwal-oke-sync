@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Ban, MessageCircle, Instagram, ArrowLeft, LogOut } from 'lucide-react';
+import { CheckCircle, XCircle, Ban, MessageCircle, Instagram, ArrowLeft, LogOut, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertDialog,
@@ -239,6 +239,14 @@ export const UserManagement = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-bold">Manajemen User</h1>
         <div className="flex flex-col sm:flex-row gap-2">
+          <Button 
+            variant="default"
+            onClick={() => navigate('/admin/subscriptions')}
+            className="w-full sm:w-auto"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Kelola Subscription
+          </Button>
           <Button 
             variant="outline" 
             onClick={() => navigate('/pos')}

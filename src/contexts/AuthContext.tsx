@@ -14,6 +14,8 @@ interface AuthContextType {
   isApproved: boolean;
   isAdmin: boolean;
   isAdminCheckComplete: boolean;
+  isSubscriptionExpired: boolean;
+  subscriptionExpiredAt: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +27,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isApproved, setIsApproved] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAdminCheckComplete, setIsAdminCheckComplete] = useState(false);
+  const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false);
+  const [subscriptionExpiredAt, setSubscriptionExpiredAt] = useState<string | null>(null);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -67,14 +71,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkUserApprovalAndRole = async (userId: string) => {
     try {
-      // Check profile approval status
+      // Check profile approval status and subscription
       const { data: profile } = await supabase
         .from('profiles')
-        .select('is_approved')
+        .select('is_approved, subscription_expired_at')
         .eq('user_id', userId)
         .single();
       
       setIsApproved(profile?.is_approved ?? false);
+      
+      // Check subscription status
+      const expiredAt = profile?.subscription_expired_at;
+      setSubscriptionExpiredAt(expiredAt || null);
+      
+      if (expiredAt) {
+        const now = new Date();
+        const expired = new Date(expiredAt);
+        setIsSubscriptionExpired(expired < now);
+      } else {
+        setIsSubscriptionExpired(false);
+      }
 
       // Check if user is admin
       const { data: roles } = await supabase
@@ -89,6 +105,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error checking user status:', error);
       setIsApproved(false);
       setIsAdmin(false);
+      setIsSubscriptionExpired(false);
+      setSubscriptionExpiredAt(null);
     } finally {
       // Mark admin check as complete
       setIsAdminCheckComplete(true);
@@ -204,6 +222,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isApproved,
     isAdmin,
     isAdminCheckComplete,
+    isSubscriptionExpired,
+    subscriptionExpiredAt,
   };
 
   return (
