@@ -312,10 +312,15 @@ Profit: ${formatPrice(receipt.profit)}
     const searchWords = searchTerm.toLowerCase().trim().split(/\s+/);
     const productName = product.name.toLowerCase();
     const productCategory = product.category?.toLowerCase() || '';
+    const productCode = product.code?.toLowerCase() || '';
+    const productBarcode = product.barcode?.toLowerCase() || '';
     
-    // Check if all search words are found in product name or category
+    // Check if all search words are found in product name, code, barcode, or category
     return searchWords.every(word => 
-      productName.includes(word) || productCategory.includes(word)
+      productName.includes(word) || 
+      productCategory.includes(word) ||
+      productCode.includes(word) ||
+      productBarcode.includes(word)
     );
   });
 
@@ -399,17 +404,64 @@ Profit: ${formatPrice(receipt.profit)}
         return;
       }
 
-      // Make background transparent
+      // Make background transparent and show scanner UI
       document.body.classList.add('scanner-active');
+      
+      // Add scanner overlay with focus guide
+      const scannerOverlay = document.createElement('div');
+      scannerOverlay.id = 'scanner-overlay';
+      scannerOverlay.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: transparent;">
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; border: 2px solid red; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);">
+            <div style="position: absolute; top: -2px; left: -2px; width: 30px; height: 30px; border-top: 4px solid red; border-left: 4px solid red;"></div>
+            <div style="position: absolute; top: -2px; right: -2px; width: 30px; height: 30px; border-top: 4px solid red; border-right: 4px solid red;"></div>
+            <div style="position: absolute; bottom: -2px; left: -2px; width: 30px; height: 30px; border-bottom: 4px solid red; border-left: 4px solid red;"></div>
+            <div style="position: absolute; bottom: -2px; right: -2px; width: 30px; height: 30px; border-bottom: 4px solid red; border-right: 4px solid red;"></div>
+          </div>
+          <button id="scanner-back" style="position: absolute; top: 20px; left: 20px; padding: 12px 24px; background: white; color: black; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.3); cursor: pointer; z-index: 10000;">Kembali</button>
+          <button id="scanner-flash" style="position: absolute; top: 20px; right: 20px; padding: 12px 24px; background: white; color: black; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.3); cursor: pointer; z-index: 10000;">Flash</button>
+          <p style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); color: white; font-size: 18px; text-align: center; z-index: 10000; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Arahkan kamera ke barcode</p>
+        </div>
+      `;
+      document.body.appendChild(scannerOverlay);
+      
+      // Handle back button
+      let scanCancelled = false;
+      document.getElementById('scanner-back')?.addEventListener('click', async () => {
+        scanCancelled = true;
+        await BarcodeScanner.stopScan();
+        document.body.classList.remove('scanner-active');
+        document.getElementById('scanner-overlay')?.remove();
+        setIsScanning(false);
+      });
+      
+      // Handle flash toggle
+      let flashOn = false;
+      document.getElementById('scanner-flash')?.addEventListener('click', async () => {
+        flashOn = !flashOn;
+        try {
+          // Note: Flash control requires native implementation
+          // This is a placeholder - full implementation would require custom native code
+          const btn = document.getElementById('scanner-flash');
+          if (btn) {
+            btn.style.background = flashOn ? '#3b82f6' : 'white';
+            btn.style.color = flashOn ? 'white' : 'black';
+          }
+          toast.info(flashOn ? 'Flash ON (native only)' : 'Flash OFF');
+        } catch (error) {
+          console.error('Flash toggle error:', error);
+        }
+      });
       
       // Start scanning
       const result = await BarcodeScanner.startScan();
       
-      // Remove transparency
+      // Remove overlay and transparency
       document.body.classList.remove('scanner-active');
+      document.getElementById('scanner-overlay')?.remove();
       setIsScanning(false);
 
-      if (result.hasContent) {
+      if (!scanCancelled && result.hasContent) {
         // Search for product by barcode or code
         const foundProduct = products.find(p => 
           p.barcode?.toLowerCase() === result.content?.toLowerCase() ||
@@ -431,6 +483,7 @@ Profit: ${formatPrice(receipt.profit)}
     } catch (error) {
       console.error('Barcode scan error:', error);
       document.body.classList.remove('scanner-active');
+      document.getElementById('scanner-overlay')?.remove();
       setIsScanning(false);
       toast.error('Terjadi kesalahan saat scanning');
     }
@@ -438,9 +491,9 @@ Profit: ${formatPrice(receipt.profit)}
 
   return (
     <div className="min-h-screen w-full bg-background">
-      {/* Header - Fixed */}
-      <header className="fixed top-0 z-50 border-b bg-card shadow-sm w-full">
-        <div className="w-full px-2 sm:px-4 py-3 sm:py-4">
+      {/* Header - Fixed with safe area */}
+      <header className="fixed top-0 z-50 border-b bg-card shadow-sm w-full pt-safe">
+        <div className="w-full px-2 sm:px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between">
             <div 
               onClick={() => navigate('/settings', { replace: true })} 

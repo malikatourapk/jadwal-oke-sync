@@ -219,7 +219,7 @@ export const StoreSettings = () => {
           isOpen={showAdminProtection}
           onClose={() => {
             setShowAdminProtection(false);
-            navigate('/');
+            navigate('/pos');
           }}
           onSuccess={() => setShowAdminProtection(false)}
           title="Masuk ke Pengaturan Toko"

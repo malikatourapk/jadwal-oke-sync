@@ -14,6 +14,7 @@ import { toast as sonnerToast } from 'sonner';
 import { Store } from '@/types/store';
 import { MessageCircle, Instagram, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import kasirqLogo from '@/assets/kasirq-logo.png';
 
 export const LoginPage = () => {
   const { signIn, signInWithUsername, signUp, loading, user } = useAuth();
@@ -31,7 +32,8 @@ export const LoginPage = () => {
     email: '',
     username: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    whatsapp: ''
   });
   
   const [errors, setErrors] = useState<string>('');
@@ -112,6 +114,11 @@ export const LoginPage = () => {
     e.preventDefault();
     setErrors('');
 
+    if (!signUpData.whatsapp) {
+      setErrors('Nomor WhatsApp wajib diisi');
+      return;
+    }
+
     if (signUpData.password !== signUpData.confirmPassword) {
       setErrors('Password tidak cocok');
       return;
@@ -125,7 +132,7 @@ export const LoginPage = () => {
     // Show loading state
     sonnerToast.loading('Mendaftar...', { id: 'signup-loading' });
 
-    const { error } = await signUp(signUpData.email, signUpData.username, signUpData.password);
+    const { error } = await signUp(signUpData.email, signUpData.username, signUpData.password, signUpData.whatsapp);
     
     // Dismiss loading
     sonnerToast.dismiss('signup-loading');
@@ -156,7 +163,8 @@ export const LoginPage = () => {
         email: '',
         username: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        whatsapp: ''
       });
       // Redirect to waiting approval page
       navigate('/waiting-approval');
@@ -185,25 +193,30 @@ export const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Kasir Multi Toko</CardTitle>
-          <CardDescription>
-            Sistem kasir untuk berbagai jenis toko
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 p-4">
+      <Card className="w-full max-w-md shadow-2xl border-0 overflow-hidden">
+        {/* iOS-style header */}
+        <div className="bg-gradient-to-br from-primary to-primary-light p-8 text-center">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div className="bg-white/20 backdrop-blur-md p-4 rounded-3xl shadow-xl">
+              <img src={kasirqLogo} alt="KasirQ Logo" className="w-20 h-20" />
+            </div>
+            <h1 className="text-4xl font-bold text-white drop-shadow-lg">KasirQ</h1>
+            <p className="text-white/90 text-sm font-medium">Sistem Kasir Modern</p>
+          </div>
+        </div>
+
+        <CardContent className="pt-6">
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Daftar</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-xl mb-6">
+              <TabsTrigger value="login" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">Daftar</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-5">
                 <div>
-                  <Label htmlFor="identifier">Email atau Username</Label>
+                  <Label htmlFor="identifier" className="text-sm font-semibold">Email atau Username</Label>
                   <Input
                     id="identifier"
                     type="text"
@@ -211,26 +224,28 @@ export const LoginPage = () => {
                     value={loginData.identifier}
                     onChange={(e) => setLoginData(prev => ({ ...prev, identifier: e.target.value }))}
                     required
+                    className="h-12 rounded-xl border-2 focus:border-primary transition-all mt-2"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
                   <Input
                     id="password"
                     type="password"
                     value={loginData.password}
                     onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                     required
+                    className="h-12 rounded-xl border-2 focus:border-primary transition-all mt-2"
                   />
                 </div>
                 
                 {errors && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{errors}</AlertDescription>
-                  </Alert>
+                  <div className="bg-error/10 text-error text-sm p-3 rounded-xl border border-error/20">
+                    {errors}
+                  </div>
                 )}
                 
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full h-12 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all" disabled={loading}>
                   {loading ? 'Masuk...' : 'Masuk'}
                 </Button>
               </form>
@@ -239,28 +254,45 @@ export const LoginPage = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div>
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email" className="text-sm font-semibold">Email</Label>
                   <Input
                     id="signup-email"
                     type="email"
                     value={signUpData.email}
                     onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
                     required
+                    className="h-12 rounded-xl border-2 focus:border-primary transition-all mt-2"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="username" className="text-sm font-semibold">Username (Nama Toko)</Label>
                   <Input
                     id="username"
                     type="text"
                     value={signUpData.username}
                     onChange={(e) => setSignUpData(prev => ({ ...prev, username: e.target.value }))}
                     required
+                    className="h-12 rounded-xl border-2 focus:border-primary transition-all mt-2"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="signup-password">Password</Label>
-                  <div className="relative">
+                  <Label htmlFor="signup-whatsapp" className="text-sm font-semibold">
+                    WhatsApp <span className="text-error">*</span>
+                  </Label>
+                  <Input
+                    id="signup-whatsapp"
+                    type="tel"
+                    placeholder="628123456789"
+                    value={signUpData.whatsapp}
+                    onChange={(e) => setSignUpData(prev => ({ ...prev, whatsapp: e.target.value }))}
+                    required
+                    className="h-12 rounded-xl border-2 focus:border-primary transition-all mt-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Format: 628xxx (tanpa +)</p>
+                </div>
+                <div>
+                  <Label htmlFor="signup-password" className="text-sm font-semibold">Password</Label>
+                  <div className="relative mt-2">
                     <Input
                       id="signup-password"
                       type={showPassword ? "text" : "password"}
@@ -268,7 +300,7 @@ export const LoginPage = () => {
                       onChange={(e) => setSignUpData(prev => ({ ...prev, password: e.target.value }))}
                       required
                       minLength={6}
-                      className="pr-10"
+                      className="h-12 rounded-xl border-2 focus:border-primary transition-all pr-10"
                     />
                     <Button
                       type="button"
@@ -286,8 +318,8 @@ export const LoginPage = () => {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="confirm-password">Konfirmasi Password</Label>
-                  <div className="relative">
+                  <Label htmlFor="confirm-password" className="text-sm font-semibold">Konfirmasi Password</Label>
+                  <div className="relative mt-2">
                     <Input
                       id="confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
@@ -295,7 +327,7 @@ export const LoginPage = () => {
                       onChange={(e) => setSignUpData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                       required
                       minLength={6}
-                      className="pr-10"
+                      className="h-12 rounded-xl border-2 focus:border-primary transition-all pr-10"
                     />
                     <Button
                       type="button"
@@ -314,12 +346,12 @@ export const LoginPage = () => {
                 </div>
                 
                 {errors && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{errors}</AlertDescription>
-                  </Alert>
+                  <div className="bg-error/10 text-error text-sm p-3 rounded-xl border border-error/20">
+                    {errors}
+                  </div>
                 )}
                 
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full h-12 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all" disabled={loading}>
                   {loading ? 'Mendaftar...' : 'Daftar'}
                 </Button>
               </form>

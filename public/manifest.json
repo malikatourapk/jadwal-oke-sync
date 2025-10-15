@@ -1,7 +1,7 @@
 {
-  "name": "Kasir Toko Anjar",
-  "short_name": "TokoAnjar",
-  "description": "Aplikasi Kasir Point of Sale untuk Toko Anjar",
+  "name": "KasirQ - POS",
+  "short_name": "KasirQ",
+  "description": "Aplikasi Kasir Point of Sale Modern",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

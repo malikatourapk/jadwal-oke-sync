@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   signIn: (email: string, password: string) => Promise<{ error?: any }>;
   signInWithUsername: (username: string, password: string) => Promise<{ error?: any }>;
-  signUp: (email: string, username: string, password: string) => Promise<{ error?: any }>;
+  signUp: (email: string, username: string, password: string, whatsapp?: string) => Promise<{ error?: any }>;
   signOut: () => Promise<void>;
   verifyAdminPassword: (password: string) => Promise<boolean>;
   loading: boolean;
@@ -71,36 +71,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkUserApprovalAndRole = async (userId: string) => {
     try {
-      // Check profile approval status and subscription
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_approved, subscription_expired_at')
-        .eq('user_id', userId)
-        .single();
-      
-      setIsApproved(profile?.is_approved ?? false);
-      
-      // Check subscription status
-      const expiredAt = profile?.subscription_expired_at;
-      setSubscriptionExpiredAt(expiredAt || null);
-      
-      if (expiredAt) {
-        const now = new Date();
-        const expired = new Date(expiredAt);
-        setIsSubscriptionExpired(expired < now);
-      } else {
-        setIsSubscriptionExpired(false);
-      }
-
-      // Check if user is admin
-      const { data: roles } = await supabase
+      // Check if user is admin first
+      const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
         .eq('role', 'admin')
         .maybeSingle();
       
-      setIsAdmin(!!roles);
+      const isUserAdmin = !!roles && !rolesError;
+      setIsAdmin(isUserAdmin);
+      
+      // Check profile approval status
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_approved')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        // If admin, bypass approval check
+        setIsApproved(isUserAdmin ? true : false);
+      } else {
+        // Admin always approved, regular users check is_approved
+        setIsApproved(isUserAdmin ? true : (profile?.is_approved ?? false));
+      }
+      
+      // Subscription check - disabled
+      setIsSubscriptionExpired(false);
+      setSubscriptionExpiredAt(null);
+      
     } catch (error) {
       console.error('Error checking user status:', error);
       setIsApproved(false);
@@ -108,18 +109,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsSubscriptionExpired(false);
       setSubscriptionExpiredAt(null);
     } finally {
-      // Mark admin check as complete
       setIsAdminCheckComplete(true);
     }
   };
 
-  const signUp = async (email: string, username: string, password: string) => {
+  const signUp = async (email: string, username: string, password: string, whatsapp?: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          username: username
+          username: username,
+          whatsapp: whatsapp
         },
         emailRedirectTo: `${window.location.origin}/waiting-approval`
       }

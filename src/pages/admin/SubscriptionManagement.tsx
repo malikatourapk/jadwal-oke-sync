@@ -42,7 +42,6 @@ interface UserSubscription {
   email: string;
   username: string;
   is_approved: boolean;
-  subscription_expired_at?: string;
   created_at: string;
 }
 
@@ -68,7 +67,7 @@ export const SubscriptionManagement = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, email, username, is_approved, subscription_expired_at, created_at')
+        .select('user_id, email, username, is_approved, created_at')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -86,17 +85,8 @@ export const SubscriptionManagement = () => {
 
     setExtending(true);
     try {
-      const { data, error } = await supabase.rpc('extend_subscription', {
-        p_user_id: selectedUser.user_id,
-        p_duration_months: parseInt(duration)
-      });
-
-      if (error) throw error;
-
-      toast.success(`Subscription berhasil diperpanjang ${duration} bulan`);
+      toast.error('Fitur subscription belum tersedia. Silakan jalankan migration SQL terlebih dahulu.');
       setShowExtendDialog(false);
-      setSelectedUser(null);
-      fetchUsers();
     } catch (error) {
       console.error('Error extending subscription:', error);
       toast.error('Gagal memperpanjang subscription');
@@ -105,24 +95,8 @@ export const SubscriptionManagement = () => {
     }
   };
 
-  const getSubscriptionStatus = (expiredAt?: string) => {
-    if (!expiredAt) {
-      return { status: 'Belum ada', variant: 'secondary' as const, icon: Clock };
-    }
-
-    const now = new Date();
-    const expired = new Date(expiredAt);
-
-    if (expired < now) {
-      return { status: 'Expired', variant: 'destructive' as const, icon: AlertCircle };
-    }
-
-    const daysLeft = Math.ceil((expired.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysLeft <= 7) {
-      return { status: `${daysLeft} hari lagi`, variant: 'default' as const, icon: AlertCircle };
-    }
-
-    return { status: 'Aktif', variant: 'default' as const, icon: CheckCircle };
+  const getSubscriptionStatus = () => {
+    return { status: 'Pending Setup', variant: 'secondary' as const, icon: Clock };
   };
 
   const filteredUsers = users.filter(user => 
@@ -168,11 +142,9 @@ export const SubscriptionManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {users.filter(u => {
-                if (!u.subscription_expired_at) return false;
-                return new Date(u.subscription_expired_at) > new Date();
-              }).length}
+              -
             </div>
+            <p className="text-xs text-muted-foreground mt-1">Run migration first</p>
           </CardContent>
         </Card>
         
@@ -182,11 +154,9 @@ export const SubscriptionManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {users.filter(u => {
-                if (!u.subscription_expired_at) return false;
-                return new Date(u.subscription_expired_at) <= new Date();
-              }).length}
+              -
             </div>
+            <p className="text-xs text-muted-foreground mt-1">Run migration first</p>
           </CardContent>
         </Card>
       </div>
@@ -217,7 +187,7 @@ export const SubscriptionManagement = () => {
           </Card>
         ) : (
           filteredUsers.map((user) => {
-            const { status, variant, icon: StatusIcon } = getSubscriptionStatus(user.subscription_expired_at);
+            const { status, variant, icon: StatusIcon } = getSubscriptionStatus();
             
             return (
               <Card key={user.user_id}>
@@ -235,16 +205,6 @@ export const SubscriptionManagement = () => {
                           <StatusIcon className="h-3 w-3" />
                           {status}
                         </Badge>
-                        
-                        {user.subscription_expired_at && (
-                          <span className="text-xs text-muted-foreground">
-                            Expired: {new Date(user.subscription_expired_at).toLocaleDateString('id-ID', {
-                              day: '2-digit',
-                              month: 'long',
-                              year: 'numeric'
-                            })}
-                          </span>
-                        )}
                       </div>
                     </div>
                     
@@ -293,17 +253,8 @@ export const SubscriptionManagement = () => {
               <p>Perpanjang subscription untuk:</p>
               <p className="font-medium text-foreground">{selectedUser?.email}</p>
               <p>Durasi: <span className="font-medium text-foreground">{duration} bulan</span></p>
-              {selectedUser?.subscription_expired_at && (
-                <p className="text-sm">
-                  Expired saat ini: {new Date(selectedUser.subscription_expired_at).toLocaleDateString('id-ID', {
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </p>
-              )}
               <p className="text-xs text-muted-foreground mt-2">
-                * Perpanjangan akan ditambahkan dari tanggal expired saat ini (atau hari ini jika sudah expired)
+                * Fitur ini membutuhkan migration SQL dijalankan terlebih dahulu
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
