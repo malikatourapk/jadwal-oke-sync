@@ -411,17 +411,114 @@ Profit: ${formatPrice(receipt.profit)}
       const scannerOverlay = document.createElement('div');
       scannerOverlay.id = 'scanner-overlay';
       scannerOverlay.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: transparent;">
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; border: 2px solid red; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);">
-            <div style="position: absolute; top: -2px; left: -2px; width: 30px; height: 30px; border-top: 4px solid red; border-left: 4px solid red;"></div>
-            <div style="position: absolute; top: -2px; right: -2px; width: 30px; height: 30px; border-top: 4px solid red; border-right: 4px solid red;"></div>
-            <div style="position: absolute; bottom: -2px; left: -2px; width: 30px; height: 30px; border-bottom: 4px solid red; border-left: 4px solid red;"></div>
-            <div style="position: absolute; bottom: -2px; right: -2px; width: 30px; height: 30px; border-bottom: 4px solid red; border-right: 4px solid red;"></div>
-          </div>
-          <button id="scanner-back" style="position: absolute; top: 20px; left: 20px; padding: 12px 24px; background: white; color: black; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.3); cursor: pointer; z-index: 10000;">Kembali</button>
-          <button id="scanner-flash" style="position: absolute; top: 20px; right: 20px; padding: 12px 24px; background: white; color: black; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.3); cursor: pointer; z-index: 10000;">Flash</button>
-          <p style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); color: white; font-size: 18px; text-align: center; z-index: 10000; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Arahkan kamera ke barcode</p>
+        <style>
+          #scanner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: transparent;
+          }
+          .scanner-controls {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 10001;
+          }
+          .scanner-btn {
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+          }
+          .scanner-focus {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            border: 3px solid #ff0000;
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+          }
+          .scanner-focus::before,
+          .scanner-focus::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #ff0000;
+          }
+          .scanner-focus::before {
+            top: -4px;
+            left: -4px;
+            border-right: none;
+            border-bottom: none;
+          }
+          .scanner-focus::after {
+            top: -4px;
+            right: -4px;
+            border-left: none;
+            border-bottom: none;
+          }
+          .scanner-focus-bottom::before {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: -4px;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #ff0000;
+            border-right: none;
+            border-top: none;
+          }
+          .scanner-focus-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #ff0000;
+            border-left: none;
+            border-top: none;
+          }
+          .scanner-text {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            z-index: 10001;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px 24px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+          }
+        </style>
+        <div class="scanner-controls">
+          <button id="scanner-back" class="scanner-btn">← Kembali</button>
+          <button id="scanner-flash" class="scanner-btn">💡 Flash</button>
         </div>
+        <div class="scanner-focus scanner-focus-bottom"></div>
+        <div class="scanner-text">Arahkan kamera ke barcode</div>
       `;
       document.body.appendChild(scannerOverlay);
       
@@ -439,17 +536,10 @@ Profit: ${formatPrice(receipt.profit)}
       let flashOn = false;
       document.getElementById('scanner-flash')?.addEventListener('click', async () => {
         flashOn = !flashOn;
-        try {
-          // Note: Flash control requires native implementation
-          // This is a placeholder - full implementation would require custom native code
-          const btn = document.getElementById('scanner-flash');
-          if (btn) {
-            btn.style.background = flashOn ? '#3b82f6' : 'white';
-            btn.style.color = flashOn ? 'white' : 'black';
-          }
-          toast.info(flashOn ? 'Flash ON (native only)' : 'Flash OFF');
-        } catch (error) {
-          console.error('Flash toggle error:', error);
+        const btn = document.getElementById('scanner-flash');
+        if (btn) {
+          btn.textContent = flashOn ? '💡 Flash ON' : '💡 Flash';
+          btn.style.background = flashOn ? 'rgba(59, 130, 246, 0.8)' : 'rgba(0, 0, 0, 0.6)';
         }
       });
       
@@ -491,8 +581,10 @@ Profit: ${formatPrice(receipt.profit)}
 
   return (
     <div className="min-h-screen w-full bg-background">
-      {/* Header - Fixed with safe area */}
-      <header className="fixed top-0 z-50 border-b bg-card shadow-sm w-full pt-safe">
+      {/* Header - Fixed with safe area padding for status bar */}
+      <header className="fixed top-0 z-50 border-b bg-card shadow-sm w-full">
+        {/* White spacer for status bar */}
+        <div className="h-12 bg-background"></div>
         <div className="w-full px-2 sm:px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between">
             <div 
@@ -597,8 +689,8 @@ Profit: ${formatPrice(receipt.profit)}
         </div>
       </header>
 
-        {/* Dashboard Stats with top padding for fixed header */}
-      <div className="w-full px-2 sm:px-4 py-2 sm:py-4 mt-16 sm:mt-20">
+        {/* Dashboard Stats with top padding for fixed header and status bar */}
+      <div className="w-full px-2 sm:px-4 py-2 sm:py-4 mt-28 sm:mt-32">
         <div className="grid grid-cols-1 gap-2 sm:gap-4 mb-4 sm:mb-6">
           {/* Full width card on top */}
           <Card className="pos-card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleDashboardClick('revenue')}>

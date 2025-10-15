@@ -200,11 +200,149 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, products
       document.body.classList.add('scanner-active');
       await BarcodeScanner.hideBackground();
 
+      // Add scanner overlay with back button, flash toggle, and focus line
+      const scannerOverlay = document.createElement('div');
+      scannerOverlay.id = 'scanner-overlay';
+      scannerOverlay.innerHTML = `
+        <style>
+          #scanner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: transparent;
+          }
+          .scanner-controls {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 10001;
+          }
+          .scanner-btn {
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+          }
+          .scanner-focus {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            border: 3px solid #ff0000;
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+          }
+          .scanner-focus::before,
+          .scanner-focus::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #ff0000;
+          }
+          .scanner-focus::before {
+            top: -4px;
+            left: -4px;
+            border-right: none;
+            border-bottom: none;
+          }
+          .scanner-focus::after {
+            top: -4px;
+            right: -4px;
+            border-left: none;
+            border-bottom: none;
+          }
+          .scanner-focus-bottom::before {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: -4px;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #ff0000;
+            border-right: none;
+            border-top: none;
+          }
+          .scanner-focus-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #ff0000;
+            border-left: none;
+            border-top: none;
+          }
+          .scanner-text {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            z-index: 10001;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px 24px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+          }
+        </style>
+        <div class="scanner-controls">
+          <button id="scanner-back-btn" class="scanner-btn">← Kembali</button>
+          <button id="scanner-flash-btn" class="scanner-btn">💡 Flash</button>
+        </div>
+        <div class="scanner-focus scanner-focus-bottom"></div>
+        <div class="scanner-text">Arahkan kamera ke barcode</div>
+      `;
+      document.body.appendChild(scannerOverlay);
+
+      let flashEnabled = false;
+
+      // Back button handler
+      document.getElementById('scanner-back-btn')?.addEventListener('click', async () => {
+        await stopScanning();
+      });
+
+      // Flash button handler
+      document.getElementById('scanner-flash-btn')?.addEventListener('click', async () => {
+        flashEnabled = !flashEnabled;
+        // Note: Flash toggle requires platform-specific implementation
+        // This is a placeholder for the UI
+        const flashBtn = document.getElementById('scanner-flash-btn');
+        if (flashBtn) {
+          flashBtn.textContent = flashEnabled ? '💡 Flash ON' : '💡 Flash';
+          flashBtn.style.background = flashEnabled ? 'rgba(59, 130, 246, 0.8)' : 'rgba(0, 0, 0, 0.6)';
+        }
+      });
+
       const result = await BarcodeScanner.startScan();
 
       document.body.classList.remove('scanner-active');
       await BarcodeScanner.showBackground();
       setIsScanning(false);
+      
+      // Remove overlay
+      const overlay = document.getElementById('scanner-overlay');
+      if (overlay) overlay.remove();
 
       if (result.hasContent) {
         const scannedCode = result.content;
@@ -239,6 +377,8 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, products
       document.body.classList.remove('scanner-active');
       await BarcodeScanner.showBackground();
       setIsScanning(false);
+      const overlay = document.getElementById('scanner-overlay');
+      if (overlay) overlay.remove();
       toast.error('Gagal scan barcode');
     }
   };
